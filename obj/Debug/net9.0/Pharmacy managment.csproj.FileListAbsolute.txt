@@ -209,3 +209,4 @@ C:\Users\Ssofian\Desktop\Pharmacy managment\obj\Debug\net9.0\Pharmacy managment.
 C:\Users\Ssofian\Desktop\Pharmacy managment\obj\Debug\net9.0\Pharmacy managment.genruntimeconfig.cache
 C:\Users\Ssofian\Desktop\Pharmacy managment\obj\Debug\net9.0\ref\Pharmacy managment.dll
 C:\Users\Ssofian\Desktop\Pharmacy managment\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
+C:\Users\Ssofian\Desktop\Pharmacy managment\obj\Debug\net9.0\Pharmacy managment.sourcelink.json
