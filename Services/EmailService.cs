@@ -13,13 +13,12 @@ public class EmailService(IOptions<MailSettings> mailSettings, ILogger<EmailServ
     {
         var message = new MimeMessage
         {
-            //From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail))
-            //Sender = MailboxAddress.Parse(_mailSettings.Mail),
+            Sender = MailboxAddress.Parse(_mailSettings.Mail),
             Subject = subject
         };
-        message.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail));
-        message.Sender = MailboxAddress.Parse(_mailSettings.Mail);
-        message.To.Add(MailboxAddress.Parse(email));
+        //message.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail));
+        //message.Sender = MailboxAddress.Parse(_mailSettings.Mail);
+        //message.To.Add(MailboxAddress.Parse(email));
 
         var builder = new BodyBuilder
         {
