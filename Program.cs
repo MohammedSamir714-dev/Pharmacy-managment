@@ -18,7 +18,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseHangfireDashboard("/Jobs");
 app.UseAuthorization();
 app.MapControllers();
 
