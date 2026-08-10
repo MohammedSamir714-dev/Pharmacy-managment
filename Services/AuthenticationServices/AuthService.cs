@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using System.Security.Cryptography;
+using System.Text;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Pharmacy_managment.Contracts.Authentication;
 using Pharmacy_managment.Helpers;
-using System.Text;
-using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
 
 namespace Pharmacy_managment.Services.AuthenticationServices
 {
@@ -15,7 +16,8 @@ namespace Pharmacy_managment.Services.AuthenticationServices
       ILogger<AuthService> logger,
       IEmailSender emailSender,
       IHttpContextAccessor httpContextAccessor,
-      ApplicationDbcontext context) : IAuthService
+      ApplicationDbcontext context,
+      IBackgroundJobClient backgroundJobClient) : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
@@ -24,6 +26,7 @@ namespace Pharmacy_managment.Services.AuthenticationServices
         private readonly IEmailSender _emailSender = emailSender;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
         private readonly ApplicationDbcontext context = context;
+        private readonly IBackgroundJobClient _backgroundJobClient = backgroundJobClient;
         private readonly int _refreshTokenExpiryDays = 14;
 
         public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
@@ -133,7 +136,7 @@ namespace Pharmacy_managment.Services.AuthenticationServices
 
                 _logger.LogInformation("Confirmation code: {code}", code);
 
-                await SendConfirmationEmail(user, code);
+                SendConfirmationEmail(user, code);
 
                 return Result.Success();
             }
@@ -182,14 +185,14 @@ namespace Pharmacy_managment.Services.AuthenticationServices
 
             _logger.LogInformation("Confirmation email resent to user {UserId} with code {code}", user.Id, code);
 
-            await SendConfirmationEmail(user, code);
+            SendConfirmationEmail(user, code); 
             return Result.Success();
         }
 
         public async Task<Result> SendResetPasswordCodeAsync(string email)
         {
             if (await _userManager.FindByEmailAsync(email) is not { } user)
-                return Result.Success(); 
+                return Result.Success();
 
             if (!user.EmailConfirmed)
                 return Result.Failure(UserErrors.EmailNotConfirmed);
@@ -198,7 +201,7 @@ namespace Pharmacy_managment.Services.AuthenticationServices
 
             _logger.LogInformation("Reset code for {email}: {code}", email, code);
 
-            await SendResetPasswordEmail(user, code);
+            SendResetPasswordEmail(user, code); 
 
             return Result.Success();
         }
@@ -226,12 +229,9 @@ namespace Pharmacy_managment.Services.AuthenticationServices
             return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
         }
 
-        private static string GenerateRefreshToken()
-        {
-            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        }
 
-        private async Task SendConfirmationEmail(ApplicationUser user, string code)
+
+        private void SendConfirmationEmail(ApplicationUser user, string code)
         {
             var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
                 templateModel: new Dictionary<string, string>
@@ -241,10 +241,10 @@ namespace Pharmacy_managment.Services.AuthenticationServices
                 }
             );
 
-            await _emailSender.SendEmailAsync(user.Email!, "Pharmacy: Email Verification Code", emailBody);
+            _backgroundJobClient.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Pharmacy: Email Verification Code", emailBody));
         }
 
-        private async Task SendResetPasswordEmail(ApplicationUser user, string code)
+        private void SendResetPasswordEmail(ApplicationUser user, string code)
         {
             var emailBody = EmailBodyBuilder.GenerateEmailBody("ForgetPassword",
                 templateModel: new Dictionary<string, string>
@@ -254,14 +254,17 @@ namespace Pharmacy_managment.Services.AuthenticationServices
                 }
             );
 
-            // لو كنت بتستخدم BackgroundJob (Hangfire) تقدر تسيبها زي ما هي
-            await _emailSender.SendEmailAsync(user.Email!, "Pharmacy: Password Reset Code", emailBody);
+            _backgroundJobClient.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Pharmacy: Password Reset Code", emailBody));
         }
 
         private async Task<IEnumerable<string>> GetUserRolesAsync(ApplicationUser user)
         {
             var userRoles = await userManager.GetRolesAsync(user);
             return userRoles;
+        }
+        private static string GenerateRefreshToken()
+        {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
     }
 }
