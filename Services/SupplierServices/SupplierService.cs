@@ -35,26 +35,28 @@ namespace Pharmacy_managment.Services.SupplierServices
         }
         public async Task<Result<SupplierResponse>> AddAsync(SupplierRequest request,CancellationToken cancellation)
         {
-            var emailExists = await context.Suppliers
-           .AnyAsync(x => x.Email == request.Email);
-
-            if (emailExists)
-                return Result.Failure<SupplierResponse>(SupplierErrors.DuplicateEmail);
-            var PhoneExists = await context.Suppliers
-           .AnyAsync(x => x.Phone == request.Phone);
-
-            if (PhoneExists)
-                return Result.Failure<SupplierResponse>(SupplierErrors.DuplicatePhone);
+          
+           var duplicate= await context.Suppliers.AsNoTracking()
+                .Where(x=>x.Email==request.Email||x.Phone==request.Phone)
+                .Select(x=>new {EmailMatch=x.Email==request.Email})
+                .FirstOrDefaultAsync(cancellation);
+            if (duplicate is not null)
+                return Result.Failure<SupplierResponse>(
+                    duplicate.EmailMatch
+                    ? SupplierErrors.DuplicateEmail : SupplierErrors.DuplicatePhone
+                    );
 
             var supplier = request.Adapt<Supplier>();
-            await context.Suppliers.AddAsync(supplier);
+            await context.Suppliers.AddAsync(supplier,cancellation);
             await context.SaveChangesAsync(cancellation);
 
-            var Response = await context.Suppliers
-                  .AsNoTracking()
-                  .Where(x => x.Id ==supplier.Id)
-                  .ProjectToType<SupplierResponse>()
-                  .SingleOrDefaultAsync(cancellation);
+            var Response = new SupplierResponse(
+                supplier.Id,
+                supplier.Name,
+                supplier.Email,
+                supplier.Phone
+                );
+                 
             return Result.Success(Response);
 
 

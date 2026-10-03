@@ -7,7 +7,7 @@
         public PurchaseOrderStatus PurchaseOrderStatus { get; set; }=PurchaseOrderStatus.Pending;
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; }
-        public ICollection<PurchaseOrderMedicene> PurchaseOrderMedicenes { get; set; }
+        public ICollection<PurchaseOrderMedicene> PurchaseOrderMedicenes { get; set; } = [];
         public ICollection<MedicineBatch> MedicineBatches { get; set; } = [];
 
     }

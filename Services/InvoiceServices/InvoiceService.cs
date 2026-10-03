@@ -1,4 +1,5 @@
 ﻿using Pharmacy_managment.Contracts.InvoiceDTO;
+using Pharmacy_managment.Contracts.InvoiceMedicenedetailsDTO;
 
 namespace Pharmacy_managment.Services.InvoiceServices
 {
@@ -10,7 +11,23 @@ namespace Pharmacy_managment.Services.InvoiceServices
         {
             var invoices = await context.Invoices
                 .AsNoTracking()
-                .ProjectToType<InvoiceResponse>()
+                .Select(i=>new InvoiceResponse(
+                    i.Id,
+                    i.InvoiceDate,
+                    i.Paymentmethod,
+                    i.Customer.FullName,
+                    i.Pharmacist.ApplicationUser.FullName,
+                    i.InvoiceMedicenedetails.Sum(d=>d.Quantity*d.UnitPrice),
+                    i.InvoiceMedicenedetails.Select(d=> new InvoiceMedicineDetailsResponse(
+                        d.MediceneId,
+                        d.Medicene.Name,
+                        d.Quantity,
+                        d.UnitPrice,
+                        d.Quantity*d.UnitPrice
+                        ))
+                    .ToList()
+
+               ))
                 .ToListAsync(cancellationToken);
 
             return Result.Success<IEnumerable<InvoiceResponse>>(invoices);
@@ -20,8 +37,25 @@ namespace Pharmacy_managment.Services.InvoiceServices
         {
             var invoice = await context.Invoices
                 .AsNoTracking()
-                .Where(x => x.Id == id)
-                .ProjectToType<InvoiceResponse>()
+                .Where(x => x.Id == id).
+                Select(i => new InvoiceResponse(
+
+                                           i.Id,
+                                           i.InvoiceDate,
+                                           i.Paymentmethod,
+                                           i.Customer.FullName,
+                                           i.Pharmacist.ApplicationUser.FullName,
+                                           i.InvoiceMedicenedetails.Sum(d => d.Quantity * d.UnitPrice),
+                                           i.InvoiceMedicenedetails.Select(d => new InvoiceMedicineDetailsResponse(
+                                               d.MediceneId,
+                                               d.Medicene.Name,
+                                               d.Quantity,
+                                               d.UnitPrice,
+                                               d.Quantity * d.UnitPrice
+                                               ))
+                                           .ToList()
+
+                                      ))
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (invoice is null)

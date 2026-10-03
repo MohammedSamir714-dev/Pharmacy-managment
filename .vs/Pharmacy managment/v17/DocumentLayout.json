@@ -1,12 +1,120 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|c:\\users\\ssofian\\desktop\\pharmacy-managment\\services\\invoiceservices\\invoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|solutionrelative:services\\invoiceservices\\invoiceservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|c:\\users\\ssofian\\desktop\\pharmacy-managment\\maping\\mapingconfig\\invoicemaping.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|solutionrelative:maping\\mapingconfig\\invoicemaping.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|c:\\users\\ssofian\\desktop\\pharmacy-managment\\contracts\\invoicedto\\invoicerequestvalidation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|solutionrelative:contracts\\invoicedto\\invoicerequestvalidation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|c:\\users\\ssofian\\desktop\\pharmacy-managment\\services\\supplierservices\\supplierservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|solutionrelative:services\\supplierservices\\supplierservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|c:\\users\\ssofian\\desktop\\pharmacy-managment\\models\\purchaseorder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|solutionrelative:models\\purchaseorder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|c:\\users\\ssofian\\desktop\\pharmacy-managment\\models\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F94312D9-D4BB-4B46-A0DB-275155E50A6C}|Pharmacy managment.csproj|solutionrelative:models\\customer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "InvoiceMaping.cs",
+              "DocumentMoniker": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Maping\\MapingConfig\\InvoiceMaping.cs",
+              "RelativeDocumentMoniker": "Maping\\MapingConfig\\InvoiceMaping.cs",
+              "ToolTip": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Maping\\MapingConfig\\InvoiceMaping.cs",
+              "RelativeToolTip": "Maping\\MapingConfig\\InvoiceMaping.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAIwBwAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-03T17:39:53.475Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "InvoiceRequestValidation.cs",
+              "DocumentMoniker": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Contracts\\InvoiceDTO\\InvoiceRequestValidation.cs",
+              "RelativeDocumentMoniker": "Contracts\\InvoiceDTO\\InvoiceRequestValidation.cs",
+              "ToolTip": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Contracts\\InvoiceDTO\\InvoiceRequestValidation.cs",
+              "RelativeToolTip": "Contracts\\InvoiceDTO\\InvoiceRequestValidation.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-03T17:39:37.329Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "InvoiceService.cs",
+              "DocumentMoniker": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Services\\InvoiceServices\\InvoiceService.cs",
+              "RelativeDocumentMoniker": "Services\\InvoiceServices\\InvoiceService.cs",
+              "ToolTip": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Services\\InvoiceServices\\InvoiceService.cs",
+              "RelativeToolTip": "Services\\InvoiceServices\\InvoiceService.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAYwC4AAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-03T17:32:59.441Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SupplierService.cs",
+              "DocumentMoniker": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Services\\SupplierServices\\SupplierService.cs",
+              "RelativeDocumentMoniker": "Services\\SupplierServices\\SupplierService.cs",
+              "ToolTip": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Services\\SupplierServices\\SupplierService.cs",
+              "RelativeToolTip": "Services\\SupplierServices\\SupplierService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-27T17:07:33.597Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PurChaseOrder.cs",
+              "DocumentMoniker": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Models\\PurChaseOrder.cs",
+              "RelativeDocumentMoniker": "Models\\PurChaseOrder.cs",
+              "ToolTip": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Models\\PurChaseOrder.cs",
+              "RelativeToolTip": "Models\\PurChaseOrder.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-27T17:06:41.815Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Customer.cs",
+              "DocumentMoniker": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Models\\Customer.cs",
+              "RelativeDocumentMoniker": "Models\\Customer.cs",
+              "ToolTip": "C:\\Users\\Ssofian\\Desktop\\Pharmacy-managment\\Models\\Customer.cs",
+              "RelativeToolTip": "Models\\Customer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-27T17:06:06.215Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
