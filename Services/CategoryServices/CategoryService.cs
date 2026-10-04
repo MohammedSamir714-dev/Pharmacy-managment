@@ -12,8 +12,13 @@ namespace Pharmacy_managment.Services.CategoryServices
         public async Task<Result<IEnumerable<CategoryResponse>>> GetAllAsync(CancellationToken cancellationToken)
         {
             var Categories=await applicationDb_context.Categories
-                .ProjectToType<CategoryResponse>()
                 .AsNoTracking()
+                .Select(c=> new CategoryResponse(
+                    c.Id,
+                    c.Name,
+                    c.Description,
+                    c.medicenes.Count()
+                    ))
                 .ToListAsync(cancellationToken);
             return Result.Success<IEnumerable<CategoryResponse>>(Categories);
         }
@@ -21,7 +26,12 @@ namespace Pharmacy_managment.Services.CategoryServices
         {
             var category = await _context.Categories
        .Where(x => x.Id == id)
-       .ProjectToType<CategoryResponse>()
+       .Select(c => new CategoryResponse(
+                    c.Id,
+                    c.Name,
+                    c.Description,
+                    c.medicenes.Count()
+                    ))
        .SingleOrDefaultAsync(cancellationToken);
 
             if (category is null)
@@ -45,7 +55,12 @@ namespace Pharmacy_managment.Services.CategoryServices
             var Response = await _context.Categories
                   .AsNoTracking()
                   .Where(x => x.Id == category.Id)
-                  .ProjectToType<CategoryResponse>()
+                  .Select(c => new CategoryResponse(
+                    c.Id,
+                    c.Name,
+                    c.Description,
+                    c.medicenes.Count()
+                    ))
                   .SingleOrDefaultAsync(cancellationToken);
 
             return Result.Success(Response);
@@ -63,8 +78,9 @@ namespace Pharmacy_managment.Services.CategoryServices
             if (isExist)
                 return Result.Failure<CategoryResponse>(CategoryErrors.DuplicateName);
 
-            category.Name = request.Name;
-            category.Description = request.Description;
+            //category.Name = request.Name;
+            //category.Description = request.Description;
+            request.Adapt(category);
 
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -72,7 +88,12 @@ namespace Pharmacy_managment.Services.CategoryServices
             var Response = await _context.Categories
                   .AsNoTracking()
                   .Where(x => x.Id == category.Id)
-                  .ProjectToType<CategoryResponse>()
+                  .Select(c => new CategoryResponse(
+                    c.Id,
+                    c.Name,
+                    c.Description,
+                    c.medicenes.Count()
+                    ))
                   .SingleOrDefaultAsync(cancellationToken);
 
             return Result.Success(Response);

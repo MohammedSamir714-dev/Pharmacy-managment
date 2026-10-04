@@ -33,16 +33,15 @@ namespace Pharmacy_managment.Services.PurChaseOrderServices
         {
             if (request.Medicines is not { Count: > 0 })
                 return Result.Failure<PurchaseOrderResponse>(
-                    PurchaseOrderErrors.NoMedicines);
+                    PurchaseOrderErrors.NotFound);
 
             if (request.Medicines.Any(x => x.Quantity <= 0 || x.UnitPrice <= 0))
                 return Result.Failure<PurchaseOrderResponse>(
-                    PurchaseOrderErrors.InvalidMedicineLine);
+                    PurchaseOrderErrors.NotFound);
 
-            // منع تكرار نفس الدواء داخل الطلب
             if (request.Medicines.GroupBy(x => x.MedicineId).Any(g => g.Count() > 1))
                 return Result.Failure<PurchaseOrderResponse>(
-                    PurchaseOrderErrors.DuplicateMedicine);
+                    PurchaseOrderErrors.NotFound);
 
             var supplierExists = await context.Suppliers
                 .AnyAsync(x => x.Id == request.SupplierId, cancellationToken);
@@ -56,7 +55,6 @@ namespace Pharmacy_managment.Services.PurChaseOrderServices
                 .Distinct()
                 .ToList();
 
-            // Query واحدة لكل الأدوية بدل query داخل foreach
             var medicines = await context.Medicene
                 .Where(x => medicineIds.Contains(x.Id))
                 .ToDictionaryAsync(x => x.Id, cancellationToken);
@@ -71,7 +69,6 @@ namespace Pharmacy_managment.Services.PurChaseOrderServices
             {
                 var medicine = medicines[item.MedicineId];
 
-                // لو سياسة النظام: آخر سعر شراء يصبح السعر الحالي للدواء
                 medicine.Price = item.UnitPrice;
 
                 lines.Add(new PurchaseOrderMedicene
