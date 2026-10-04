@@ -53,7 +53,7 @@ namespace Pharmacy_managment.Services.InvoiceServices
                                                d.UnitPrice,
                                                d.Quantity * d.UnitPrice
                                                ))
-                                           .ToList()
+      .ToList()
 
                                       ))
                 .FirstOrDefaultAsync(cancellationToken);
@@ -64,8 +64,16 @@ namespace Pharmacy_managment.Services.InvoiceServices
             return Result.Success(invoice);
         }
 
-        public async Task<Result<InvoiceResponse>> AddAsync(InvoiceRequest request, CancellationToken cancellationToken)
+        public async Task<Result<InvoiceResponse>> AddAsync(
+     InvoiceRequest request,
+     CancellationToken cancellationToken)
         {
+            if (request.Medicines is not { Count: > 0 })
+                return Result.Failure<InvoiceResponse>(InvoiceErrors.NotFound);
+
+            if (request.Medicines.Any(x => x.Quantity <= 0))
+                return Result.Failure<InvoiceResponse>(InvoiceErrors.NotFound);
+
             var customerExists = await context.Customers
                 .AnyAsync(x => x.Id == request.CustomerId, cancellationToken);
 
@@ -78,48 +86,73 @@ namespace Pharmacy_managment.Services.InvoiceServices
             if (!pharmacistExists)
                 return Result.Failure<InvoiceResponse>(PharmacistErrors.NotFound);
 
-            if (request.Medicines is null || request.Medicines.Count == 0)
-                return Result.Failure<InvoiceResponse>(InvoiceErrors.NotFound);
+            var requestedLines = request.Medicines
+                .GroupBy(x => x.MedicineId)
+                .Select(g => new
+                {
+                    MedicineId = g.Key,
+                    Quantity = g.Sum(x => x.Quantity)
+                })
+                .ToList();
+
+            var medicineIds = requestedLines
+                .Select(x => x.MedicineId)
+                .ToList();
+
+            var medicines = await context.Medicene
+                .Where(x => medicineIds.Contains(x.Id))
+                .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+            if (medicines.Count != medicineIds.Count)
+                return Result.Failure<InvoiceResponse>(MediceneErrors.NotFound);
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            var batches = await context.medicineBatches
+                .Where(x => medicineIds.Contains(x.MediceneId)
+                    && x.ExpiryDate > today
+                    && x.Quntityremaining > 0)
+                .OrderBy(x => x.ExpiryDate)
+                .ToListAsync(cancellationToken);
+
+            var batchesByMedicine = batches
+                .GroupBy(x => x.MediceneId)
+                .ToDictionary(x => x.Key, x => x.ToList());
+
             var invoiceDetails = new List<InvoiceMedicenedetails>();
 
-            foreach (var item in request.Medicines)
+            foreach (var line in requestedLines)
             {
-                var medicine = await context.Medicene
-                    .SingleOrDefaultAsync(x => x.Id == item.MedicineId, cancellationToken);
+                var medicine = medicines[line.MedicineId];
 
-                if (medicine is null)
-                    return Result.Failure<InvoiceResponse>(MediceneErrors.NotFound);
+                batchesByMedicine.TryGetValue(line.MedicineId, out var medicineBatches);
+                medicineBatches ??= [];
 
-                var batches = await context.medicineBatches
-                    .Where(x => x.MediceneId == item.MedicineId &&
-                                x.ExpiryDate > today &&
-                                x.Quntityremaining > 0)
-                    .OrderBy(x => x.ExpiryDate)
-                    .ToListAsync(cancellationToken);
+                var availableQuantity = medicineBatches.Sum(x => x.Quntityremaining);
 
-                var availableQuantity = batches.Sum(x => x.Quntityremaining);
+                if (availableQuantity < line.Quantity)
+                    return Result.Failure<InvoiceResponse>(
+                        MediceneErrors.NotFound);
 
-                if (availableQuantity < item.Quantity)
-                    return Result.Failure<InvoiceResponse>(MediceneErrors.HasMedicineBatches);
+                var remainingToDeduct = line.Quantity;
 
-                var remainingToDeduct = item.Quantity;
-
-                foreach (var batch in batches)
+                foreach (var batch in medicineBatches)
                 {
-                    if (remainingToDeduct <= 0)
+                    if (remainingToDeduct == 0)
                         break;
 
-                    var deductFromBatch = Math.Min(batch.Quntityremaining, remainingToDeduct);
-                    batch.Quntityremaining -= deductFromBatch;
-                    remainingToDeduct -= deductFromBatch;
+                    var deductedQuantity = Math.Min(
+                        batch.Quntityremaining,
+                        remainingToDeduct);
+
+                    batch.Quntityremaining -= deductedQuantity;
+                    remainingToDeduct -= deductedQuantity;
                 }
 
                 invoiceDetails.Add(new InvoiceMedicenedetails
                 {
                     MediceneId = medicine.Id,
-                    Quantity = item.Quantity,
+                    Quantity = line.Quantity,
                     UnitPrice = medicine.Price
                 });
             }
@@ -132,7 +165,7 @@ namespace Pharmacy_managment.Services.InvoiceServices
                 InvoiceMedicenedetails = invoiceDetails
             };
 
-            await context.Invoices.AddAsync(invoice, cancellationToken);
+            context.Invoices.Add(invoice);
 
             try
             {
@@ -140,14 +173,30 @@ namespace Pharmacy_managment.Services.InvoiceServices
             }
             catch (DbUpdateConcurrencyException)
             {
-                return Result.Failure<InvoiceResponse>(MediceneErrors.NotFound);
+                return Result.Failure<InvoiceResponse>(
+                    MediceneErrors.NotFound);
             }
 
             var response = await context.Invoices
                 .AsNoTracking()
-                .Where(x => x.Id == invoice.Id)
-                .ProjectToType<InvoiceResponse>()
-                .FirstAsync(cancellationToken);
+                .Where(i => i.Id == invoice.Id)
+                .Select(i => new InvoiceResponse(
+                    i.Id,
+                    i.InvoiceDate,
+                    i.Paymentmethod,
+                    i.Customer.FullName,
+                    i.Pharmacist.ApplicationUser.FullName,
+                    i.InvoiceMedicenedetails.Sum(d => d.Quantity * d.UnitPrice),
+                    i.InvoiceMedicenedetails.Select(d =>
+                        new InvoiceMedicineDetailsResponse(
+                            d.MediceneId,
+                            d.Medicene.Name,
+                            d.Quantity,
+                            d.UnitPrice,
+                            d.Quantity * d.UnitPrice
+                        )).ToList()
+                ))
+                .SingleAsync(cancellationToken);
 
             return Result.Success(response);
         }

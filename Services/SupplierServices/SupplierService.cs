@@ -15,7 +15,12 @@ namespace Pharmacy_managment.Services.SupplierServices
         {
             var Supplier = await context.Suppliers
                 .AsNoTracking()
-                .ProjectToType<SupplierResponse>()
+                .Select(s=>new SupplierResponse(
+                    s.Id,
+                    s.Name,
+                    s.Email,
+                    s.Phone
+                    ))
                 .ToListAsync(cancellation);
 
             return Result.Success<IEnumerable<SupplierResponse>>(Supplier);
@@ -25,7 +30,12 @@ namespace Pharmacy_managment.Services.SupplierServices
             var response = await context.Suppliers
                 .AsNoTracking()
                 .Where(x => x.Id == id)
-                .ProjectToType<SupplierResponse>()
+                .Select(s => new SupplierResponse(
+                    s.Id,
+                    s.Name,
+                    s.Email,
+                    s.Phone
+                    ))
                 .SingleOrDefaultAsync(cancellation);
 
             if (response is null)
@@ -86,7 +96,12 @@ namespace Pharmacy_managment.Services.SupplierServices
             var Response = await context.Suppliers
                   .AsNoTracking()
                   .Where(x => x.Id == supplier.Id)
-                  .ProjectToType<SupplierResponse>()
+                  .Select(s => new SupplierResponse(
+                    s.Id,
+                    s.Name,
+                    s.Email,
+                    s.Phone
+                    ))
                   .SingleOrDefaultAsync(cancellation);
 
             return Result.Success(Response);

@@ -1,4 +1,5 @@
 ﻿using Pharmacy_managment.Contracts.PurchaseOrderDTO;
+using Pharmacy_managment.Contracts.PurchaseOrderMediceneDTO;
 
 namespace Pharmacy_managment.Services.PurChaseOrderServices
 {
@@ -26,30 +27,53 @@ namespace Pharmacy_managment.Services.PurChaseOrderServices
 
             return Result.Success(order);
         }
-        public async Task<Result<PurchaseOrderResponse>> AddAsync(PurchaseOrderRequest request, CancellationToken cancellationToken)
+        public async Task<Result<PurchaseOrderResponse>> AddAsync(
+    PurchaseOrderRequest request,
+    CancellationToken cancellationToken)
         {
+            if (request.Medicines is not { Count: > 0 })
+                return Result.Failure<PurchaseOrderResponse>(
+                    PurchaseOrderErrors.NoMedicines);
+
+            if (request.Medicines.Any(x => x.Quantity <= 0 || x.UnitPrice <= 0))
+                return Result.Failure<PurchaseOrderResponse>(
+                    PurchaseOrderErrors.InvalidMedicineLine);
+
+            // منع تكرار نفس الدواء داخل الطلب
+            if (request.Medicines.GroupBy(x => x.MedicineId).Any(g => g.Count() > 1))
+                return Result.Failure<PurchaseOrderResponse>(
+                    PurchaseOrderErrors.DuplicateMedicine);
+
             var supplierExists = await context.Suppliers
                 .AnyAsync(x => x.Id == request.SupplierId, cancellationToken);
 
             if (!supplierExists)
-                return Result.Failure<PurchaseOrderResponse>(SupplierErrors.NotFound);
+                return Result.Failure<PurchaseOrderResponse>(
+                    SupplierErrors.NotFound);
 
-            if (request.Medicines is null || request.Medicines.Count == 0)
-                return Result.Failure<PurchaseOrderResponse>(PurchaseOrderErrors.NotFound);
+            var medicineIds = request.Medicines
+                .Select(x => x.MedicineId)
+                .Distinct()
+                .ToList();
+
+            // Query واحدة لكل الأدوية بدل query داخل foreach
+            var medicines = await context.Medicene
+                .Where(x => medicineIds.Contains(x.Id))
+                .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+            if (medicines.Count != medicineIds.Count)
+                return Result.Failure<PurchaseOrderResponse>(
+                    MediceneErrors.NotFound);
 
             var lines = new List<PurchaseOrderMedicene>();
 
             foreach (var item in request.Medicines)
             {
-                if (item.Quantity <= 0)
-                    return Result.Failure<PurchaseOrderResponse>(PurchaseOrderErrors.NotFound);
+                var medicine = medicines[item.MedicineId];
 
-                var medicine = await context.Medicene
-                     .FirstOrDefaultAsync(x => x.Id == item.MedicineId);
-
-                if (medicine is null)
-                    return Result.Failure<PurchaseOrderResponse>(MediceneErrors.NotFound);
+                // لو سياسة النظام: آخر سعر شراء يصبح السعر الحالي للدواء
                 medicine.Price = item.UnitPrice;
+
                 lines.Add(new PurchaseOrderMedicene
                 {
                     MediceneId = item.MedicineId,
@@ -64,14 +88,35 @@ namespace Pharmacy_managment.Services.PurChaseOrderServices
                 PurchaseOrderMedicenes = lines
             };
 
-            await context.Purchases.AddAsync(order, cancellationToken);
+            context.Purchases.Add(order);
+
             await context.SaveChangesAsync(cancellationToken);
 
-            var response = await context.Purchases
-                .AsNoTracking()
-                .Where(x => x.Id == order.Id)
-                .ProjectToType<PurchaseOrderResponse>()
-                .FirstAsync(cancellationToken);
+          
+    var response = await context.Purchases
+    .AsNoTracking()
+    .Where(p => p.Id == order.Id)
+    .Select(p => new PurchaseOrderResponse(
+        p.Id,
+        p.orderDate,
+        p.PurchaseOrderStatus,
+        p.SupplierId,
+        p.Supplier.Name,
+
+        p.PurchaseOrderMedicenes
+            .Sum(x => x.Quantity * x.UnitPrice),
+
+        p.PurchaseOrderMedicenes
+            .Select(x => new PurchaseOrderMediceneResponse(
+                x.MediceneId,
+                x.Medicene.Name,
+                x.Quantity,
+                x.UnitPrice,
+                x.Quantity * x.UnitPrice
+            ))
+            .ToList()
+    ))
+    .SingleAsync(cancellationToken);
 
             return Result.Success(response);
         }
